@@ -1,70 +1,97 @@
-export interface Voliere {
-    getArea(): number;
+interface Product {
+    name: string;
+    price: number;
 }
 
-export class FlyingAndSwimmingBirdVoliere implements Voliere {
-    private length: number = 15;
-    private width: number = 10;
-    private heightNet: boolean = true;
-    private waterLength: number = 3;
-    private waterWidth: number = 3;
-  
-    getArea(): number {
-        const landArea = this.length * this.width;
-        const waterArea = this.waterLength * this.waterWidth;
-        return waterArea + landArea;
+interface Book extends Product {
+    author: string;
+    genre: string;
+}
+
+interface Clothing extends Product {
+    size: string;
+    color: string;
+}
+interface Technique extends Product {
+    type: string;
+}
+
+export abstract class Shop {
+    name: string;
+    location: string;
+
+    constructor(name: string, location: string) {
+        this.name = name;
+        this.location = location;
+    }
+
+    abstract sellProducts(): void;
+}
+
+export class Bookstore extends Shop {
+    private books: Book[];
+
+    constructor(name: string, location: string, books: Book[]) {
+        super(name, location);
+        this.books = books;
+    }
+
+    getBooks() {
+        return this.books;
+    }
+
+    sellProducts(): void {
+        alert(`Welcome to ${this.name}! We sell books.`);
+    }
+
+    quitBookStore(): void {
+        alert("Goodbye!");
     }
 }
 
-export class SwimmingBirdVoliere implements Voliere {
-    private length: number = 2;
-    private width: number = 4;
-    private heightNet: boolean = false;
-    private waterLength: number = 3;
-    private waterWidth: number = 3;
+export class DepartmentStore extends Shop {
+    private clothing: Clothing[];
+    private appliances: Product[];
 
-    getArea(): number {
-        const landArea = this.length * this.width;
-        const waterArea = this.waterLength * this.waterWidth;
-        return waterArea + landArea;
+    constructor(
+        name: string,
+        location: string,
+        clothing: Clothing[],
+        appliances: Technique[]
+    ) {
+        super(name, location);
+        this.clothing = clothing;
+        this.appliances = appliances;
+    }
+
+    sellProducts(): void {
+        alert(`Welcome to ${this.name}! We sell clothing and appliances.`);
+    }
+
+    getClothing() {
+        return this.clothing;
+    }
+
+    getTechnique() {
+        return this.appliances;
+    }
+
+    quitDepartmentStore(): void {
+        alert("Goodbye!");
     }
 }
 
-export class RunningBirdVoliere implements Voliere {
-    private length: number = 15;
-    private width: number = 3;
-    private heightNet: boolean = true;
+export class ShoppingMall {
+    private stores: Shop[];
 
-    getArea(): number {
-        const area = this.length * this.width;
-        return area;
+    constructor(stores: Shop[]) {
+        this.stores = stores;
+    }
+
+    enterMall(): void {
+        alert("Welcome to Mall");
+    }
+    quitMall(): void {
+        alert("Goodbye!");
     }
 }
-
-export class Bird{
-    private voliere: Voliere;
-    private birdName: string;
-    private isSwimming: boolean;
-    private isFlying: boolean;
-    
-    constructor(birdName: string, isSwimming: boolean, isFlying: boolean) {
-      this.birdName = birdName
-      this.isFlying = isFlying
-      this.isSwimming = isSwimming
-      if(isSwimming && isFlying){
-        this.voliere = new FlyingAndSwimmingBirdVoliere;
-      }else if(isSwimming && !isFlying){
-        this.voliere = new SwimmingBirdVoliere;
-      }else {
-        this.voliere = new RunningBirdVoliere;
-      }
-    }
-  
-    getVoliere(): Voliere {
-      return this.voliere;
-    }
-    getName(): string {
-        return this.birdName;
-    }
-}
-  

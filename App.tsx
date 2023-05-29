@@ -1,144 +1,388 @@
-import { StatusBar } from 'expo-status-bar';
-import { FlatList, StyleSheet, Text, View, ScrollView, SafeAreaView, Pressable, TextInput } from 'react-native';
-import { Bird } from './classes';
-import { useState } from 'react';
-import DropDownPicker from "react-native-dropdown-picker";
-import {Controller, useForm} from 'react-hook-form';
+import { StatusBar } from "expo-status-bar";
+import {
+    FlatList,
+    StyleSheet,
+    Text,
+    View,
+    ScrollView,
+    SafeAreaView,
+    Pressable,
+    TextInput,
+} from "react-native";
+import { Shop, Bookstore, DepartmentStore, ShoppingMall } from "./classes";
+import { useState } from "react";
+
 export default function App() {
-  const [firstInput, setFirstInput] = useState<string>('')
-  const [flyOpen, setFlyOpen] = useState(false);
-  const [flyValue, setFlyValue] = useState(null);
-  const [swimOpen, setSwimOpen] = useState(false);
-  const [swimValue, setSwimValue] = useState(null);
-  const yesNo = [
-    { label: "Так", value: true },
-    { label: "Ні", value: false },
-  ]
-  const [birds, setBirds] = useState<Bird[]>([new Bird('Фламінго', true, true), new Bird('Пінгвін', true, false), new Bird('Ківві', false, false)])
-  const { handleSubmit, control } = useForm();
-  const addBird = () => {
-    if(flyValue === null || swimValue === null || firstInput === ''){
-      return
-    }
-    const bird = new Bird(firstInput, swimValue, flyValue)
-    if(birds.find((el: Bird)=>{
-      return el.getName() == bird.getName()
-    })){
-      return
-    }
-    setBirds([...birds, new Bird(firstInput, swimValue, flyValue)])
-  }
-  return (
-    <SafeAreaView>
-      <View style={styles.container}>
-      <Controller
-        name="company"
-        defaultValue=""
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.dropdown1}>
-            <DropDownPicker
-                    style={styles.dropdown}
-                    open={flyOpen}
-                    value={flyValue}
-                    items={yesNo}
-                    setOpen={setFlyOpen}
-                    setValue={setFlyValue}
-                    placeholder="Птах вміє літати?"
-                    placeholderStyle={styles.placeholderStyles}
-                    activityIndicatorColor="#5188E3"
-                    searchable={false}
-                    searchPlaceholder="Search your company here..."
-                    onChangeValue={onChange}
-                    zIndex={1001}
-                    zIndexInverse={3001}
-                  />
-          </View>
-        )}
-      />
-      <Controller
-        name="company"
-        defaultValue=""
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.dropdown2}>
-            <DropDownPicker
-                    style={styles.dropdown}
-                    open={swimOpen}
-                    value={swimValue}
-                    items={yesNo}
-                    setOpen={setSwimOpen}
-                    setValue={setSwimValue}
-                    placeholder="Птах вміє плавати?"
-                    placeholderStyle={styles.placeholderStyles}
-                    activityIndicatorColor="#5188E3"
-                    searchable={false}
-                    searchPlaceholder="Search your company here..."
-                    onChangeValue={onChange}
-                    zIndex={1000}
-                    zIndexInverse={3000}
-                  />
-          </View>
-        )}
-      />
-        <TextInput style={{backgroundColor: 'white', margin: 15, fontSize: 20, padding: 5, borderColor: '#82ccdd', borderWidth: 4, borderRadius: 12, width: 200}} placeholder='Введіть назву птаха' onChangeText={text => setFirstInput(text)}/>
-        <Pressable style={({pressed}) => [{backgroundColor: pressed ? '#66a3ff' : '#0066ff'}, styles.button]} onPress={addBird}>
-            <Text style={styles.text}>Додати</Text>
-        </Pressable>
-        {birds.map((el: Bird) => {
-          return <Text key = {el.getName()} style={{fontSize: 20, paddingTop: 10}}>{el.getName()+ " " + el.getVoliere().getArea()+' м²'}</Text>
-        })}
-        <Text style={{fontSize: 20, paddingTop: 10}}>Сумарна площа = {birds.reduce((sum: number, el: Bird) => {
-          return sum + el.getVoliere().getArea()
-        }, 0)}</Text>
-      </View>
-    </SafeAreaView>
-  );
+    const [inDepartmentStore, setInDepartmentStore] = useState(false);
+    const [inMall, setInMall] = useState(false);
+    const [inBookStore, setInBookStore] = useState(false);
+    const bookstore = new Bookstore("Book Haven", "Main Street", [
+        {
+            name: "Book name 1",
+            price: 10,
+            author: "Author 1",
+            genre: "Genre 1",
+        },
+        {
+            name: "Book name 2",
+            price: 15,
+            author: "Author 2",
+            genre: "Genre 2",
+        },
+    ]);
+
+    const departmentStore = new DepartmentStore(
+        "SuperMarket",
+        "Shopping Avenue",
+        [
+            { name: "T-Shirt", price: 20, size: "M", color: "Blue" },
+            { name: "Jeans", price: 50, size: "L", color: "Black" },
+        ],
+        [
+            { name: "TV", price: 500, type: "televisions" },
+            { name: "Washing Machine", price: 800, type: "bathroom" },
+        ]
+    );
+
+    const shoppingMall = new ShoppingMall([bookstore, departmentStore]);
+
+    return (
+        <ScrollView style={{ backgroundColor: "yellow" }}>
+            <SafeAreaView>
+                {inMall ? (
+                    <Pressable
+                        style={({ pressed }) => [
+                            {
+                                backgroundColor: pressed
+                                    ? "#66a3ff"
+                                    : "#0066ff",
+                            },
+                            {
+                                width: 200,
+                                height: 40,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderRadius: 12,
+                                alignSelf: "center",
+                                marginTop: 20,
+                            },
+                        ]}
+                        onPress={() => {
+                            shoppingMall.quitMall();
+                            setInMall(false);
+                            setInDepartmentStore(false);
+                            setInBookStore(false);
+                        }}
+                    >
+                        <Text style={styles.text}>Вийти з тц</Text>
+                    </Pressable>
+                ) : (
+                    <Pressable
+                        style={({ pressed }) => [
+                            {
+                                backgroundColor: pressed
+                                    ? "#66a3ff"
+                                    : "#0066ff",
+                            },
+                            {
+                                width: 200,
+                                height: 40,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderRadius: 12,
+                                alignSelf: "center",
+                                marginTop: 20,
+                            },
+                        ]}
+                        onPress={() => {
+                            shoppingMall.enterMall();
+                            setInMall(true);
+                        }}
+                    >
+                        <Text style={styles.text}>Увійти в тц</Text>
+                    </Pressable>
+                )}
+                {inMall ? (
+                    <View>
+                        {inBookStore ? (
+                            <Pressable
+                                style={({ pressed }) => [
+                                    {
+                                        backgroundColor: pressed
+                                            ? "#66a3ff"
+                                            : "#0066ff",
+                                    },
+                                    {
+                                        width: 200,
+                                        height: 40,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: 12,
+                                        alignSelf: "center",
+                                        marginTop: 20,
+                                    },
+                                ]}
+                                onPress={() => {
+                                    bookstore.quitBookStore();
+                                    setInBookStore(false);
+                                }}
+                            >
+                                <Text style={styles.text}>
+                                    Вийти з книгарні
+                                </Text>
+                            </Pressable>
+                        ) : (
+                            <Pressable
+                                style={({ pressed }) => [
+                                    {
+                                        backgroundColor: pressed
+                                            ? "#66a3ff"
+                                            : "#0066ff",
+                                    },
+                                    {
+                                        width: 200,
+                                        height: 40,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: 12,
+                                        alignSelf: "center",
+                                        marginTop: 20,
+                                    },
+                                ]}
+                                onPress={() => {
+                                    bookstore.sellProducts();
+                                    setInBookStore(true);
+                                    setInDepartmentStore(false);
+                                }}
+                            >
+                                <Text style={styles.text}>
+                                    Зайти в книгарню
+                                </Text>
+                            </Pressable>
+                        )}
+                        {inBookStore
+                            ? bookstore
+                                  .getBooks()
+                                  .map((elem: any, index: number) => {
+                                      return (
+                                          <View
+                                              key={index}
+                                              style={{
+                                                  alignSelf: "center",
+                                                  paddingBottom: 20,
+                                              }}
+                                          >
+                                              <Text style={styles.textProducts}>
+                                                  Книга № {index + 1}
+                                              </Text>
+                                              <Text style={styles.textProducts}>
+                                                  {elem.name}
+                                              </Text>
+                                              <Text style={styles.textProducts}>
+                                                  {elem.genre}
+                                              </Text>
+                                              <Text style={styles.textProducts}>
+                                                  {elem.price}
+                                              </Text>
+                                          </View>
+                                      );
+                                  })
+                            : null}
+                        {inDepartmentStore ? (
+                            <Pressable
+                                style={({ pressed }) => [
+                                    {
+                                        backgroundColor: pressed
+                                            ? "#66a3ff"
+                                            : "#0066ff",
+                                    },
+                                    {
+                                        width: 200,
+                                        height: 40,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: 12,
+                                        alignSelf: "center",
+                                        marginTop: 20,
+                                    },
+                                ]}
+                                onPress={() => {
+                                    departmentStore.quitDepartmentStore();
+                                    setInDepartmentStore(false);
+                                }}
+                            >
+                                <Text style={styles.text}>
+                                    Вийти з крамниці
+                                </Text>
+                            </Pressable>
+                        ) : (
+                            <Pressable
+                                style={({ pressed }) => [
+                                    {
+                                        backgroundColor: pressed
+                                            ? "#66a3ff"
+                                            : "#0066ff",
+                                    },
+                                    {
+                                        width: 200,
+                                        height: 40,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: 12,
+                                        alignSelf: "center",
+                                        marginTop: 20,
+                                    },
+                                ]}
+                                onPress={() => {
+                                    departmentStore.sellProducts();
+                                    setInDepartmentStore(true);
+                                    setInBookStore(false);
+                                }}
+                            >
+                                <Text style={styles.text}>
+                                    Зайти в крамницю
+                                </Text>
+                            </Pressable>
+                        )}
+                        {inDepartmentStore ? (
+                            <View>
+                                <Text style={styles.textProducts}>Одяг</Text>
+                                {departmentStore
+                                    .getClothing()
+                                    .map((elem: any, index: number) => {
+                                        return (
+                                            <View
+                                                key={index}
+                                                style={{
+                                                    alignSelf: "center",
+                                                    paddingBottom: 20,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    Товар № {index + 1}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.name}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.price}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.size}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.color}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                                <Text style={styles.textProducts}>
+                                    Побутова техніка
+                                </Text>
+                                {departmentStore
+                                    .getTechnique()
+                                    .map((elem: any, index: number) => {
+                                        return (
+                                            <View
+                                                key={index}
+                                                style={{
+                                                    alignSelf: "center",
+                                                    paddingBottom: 20,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    Товар № {index + 1}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.name}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.price}
+                                                </Text>
+                                                <Text
+                                                    style={styles.textProducts}
+                                                >
+                                                    {elem.type}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                            </View>
+                        ) : null}
+                    </View>
+                ) : null}
+            </SafeAreaView>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: 20,
-    lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'white',
-    alignSelf: 'center'
-  },
-  button: {
-    marginTop: 10,
-    alignItems: 'center',
-    alignSelf: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    elevation: 3,
-    width: 200
-  },
-  dropdown: {
-    borderColor: "#82ccdd",
-    borderWidth: 4, 
-    borderRadius: 12,
-    height: 50,
-  },
-  placeholderStyles: {
-    color: "grey",
-  },
-  dropdown1: {
-    marginHorizontal: 10,
-    marginBottom: 15,
-    width: 200,
-    zIndex: 20
-  },
-  dropdown2: {
-    marginHorizontal: 10,
-    marginBottom: 15,
-    width: 200,
-    zIndex: 10
-  },
+    container: {
+        backgroundColor: "#fff",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    text: {
+        fontSize: 20,
+        lineHeight: 21,
+        fontWeight: "bold",
+        letterSpacing: 0.25,
+        color: "white",
+        alignSelf: "center",
+    },
+    textProducts: {
+        fontSize: 20,
+        lineHeight: 21,
+        fontWeight: "bold",
+        letterSpacing: 0.25,
+        color: "black",
+        alignSelf: "center",
+    },
+    button: {
+        marginTop: 10,
+        alignItems: "center",
+        alignSelf: "center",
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        width: 200,
+    },
+    dropdown: {
+        borderColor: "#82ccdd",
+        borderWidth: 4,
+        borderRadius: 12,
+        height: 50,
+    },
+    placeholderStyles: {
+        color: "grey",
+    },
+    dropdown1: {
+        marginHorizontal: 10,
+        marginBottom: 15,
+        width: 200,
+        zIndex: 20,
+    },
+    dropdown2: {
+        marginHorizontal: 10,
+        marginBottom: 15,
+        width: 200,
+        zIndex: 10,
+    },
 });
