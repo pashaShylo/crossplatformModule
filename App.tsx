@@ -1,55 +1,116 @@
-import { StatusBar } from "expo-status-bar";
 import {
-    FlatList,
     StyleSheet,
     Text,
     View,
     ScrollView,
-    SafeAreaView,
     Pressable,
+    SafeAreaView,
     TextInput,
 } from "react-native";
-import { Shop, Bookstore, DepartmentStore, ShoppingMall } from "./classes";
+import Header from "./header";
 import { useState } from "react";
-
+import calculateExp from "./calculateExp";
+interface Worker {
+    surname: string;
+    enrollDate: Date;
+    salaryPerHour: number;
+    workedHours: number;
+}
 export default function App() {
-    const [inDepartmentStore, setInDepartmentStore] = useState(false);
-    const [inMall, setInMall] = useState(false);
-    const [inBookStore, setInBookStore] = useState(false);
-    const bookstore = new Bookstore("Book Haven", "Main Street", [
-        {
-            name: "Book name 1",
-            price: 10,
-            author: "Author 1",
-            genre: "Genre 1",
-        },
-        {
-            name: "Book name 2",
-            price: 15,
-            author: "Author 2",
-            genre: "Genre 2",
-        },
-    ]);
+    const surnameValidation = (surname: string) => {
+        if (surname.length > 3) {
+            return true;
+        } else {
+            alert("Surname must be longer than 3 letters");
+            return false;
+        }
+    };
+    const dateValidation = (input: string) => {
+        const pattern = /^\d{2}\.\d{2}\.\d{4}$/;
 
-    const departmentStore = new DepartmentStore(
-        "SuperMarket",
-        "Shopping Avenue",
-        [
-            { name: "T-Shirt", price: 20, size: "M", color: "Blue" },
-            { name: "Jeans", price: 50, size: "L", color: "Black" },
-        ],
-        [
-            { name: "TV", price: 500, type: "televisions" },
-            { name: "Washing Machine", price: 800, type: "bathroom" },
-        ]
-    );
+        if (pattern.test(input)) {
+            const parts = input.split(".");
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
 
-    const shoppingMall = new ShoppingMall([bookstore, departmentStore]);
+            if (
+                day >= 1 &&
+                day <= 31 &&
+                month >= 1 &&
+                month <= 12 &&
+                year >= 1900 &&
+                year <= 2023
+            ) {
+                return true;
+            } else {
+                alert("Input value is invalid. Date values are out of range.");
+                return false;
+            }
+        } else {
+            alert("Input value is invalid. Date format should be dd.mm.yyyy.");
+            return false;
+        }
+    };
+    const salaryValidation = (salary: number) => {
+        if (isNaN(salary)) {
+            alert("Salary must be int");
+            return false;
+        }
+        if (salary <= 0) {
+            alert("Salary must be more than 0");
+            return false;
+        }
+        return true;
+    };
+    const workedHoursValidation = (hours: number) => {
+        if (isNaN(hours)) {
+            alert("Hours must be int");
+            return false;
+        }
+        if (hours <= 0) {
+            alert("Worked hours must be more than 0");
+            return false;
+        }
+        return true;
+    };
+    const [workers, setWorkers] = useState<Worker[]>([]);
+    const [surname, setSurname] = useState("");
+    const [enrollDate, setEnrollDate] = useState("");
+    const [salaryPerHour, setSalaryPerHour] = useState(0);
+    const [workedHours, setWorkedHours] = useState(0);
 
     return (
-        <ScrollView style={{ backgroundColor: "yellow" }}>
-            <SafeAreaView>
-                {inMall ? (
+        <SafeAreaView style={{ backgroundColor: "#82ccdd", flex: 1 }}>
+            <ScrollView>
+                <View>
+                    <Header />
+                    <Text style={{ ...styles.text, paddingTop: 20 }}>
+                        Прізвище
+                    </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(text) => setSurname(text)}
+                    ></TextInput>
+                    <Text style={styles.text}>Дата зарахування на роботу</Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(text) => setEnrollDate(text)}
+                    ></TextInput>
+                    <Text style={styles.text}>Годинна заробітна плата</Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(text) =>
+                            setSalaryPerHour(parseInt(text))
+                        }
+                    ></TextInput>
+                    <Text style={styles.text}>
+                        Кількість відпрацьованих годин
+                    </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(text) => setWorkedHours(parseInt(text))}
+                    ></TextInput>
                     <Pressable
                         style={({ pressed }) => [
                             {
@@ -57,282 +118,74 @@ export default function App() {
                                     ? "#66a3ff"
                                     : "#0066ff",
                             },
-                            {
-                                width: 200,
-                                height: 40,
-                                alignItems: "center",
-                                justifyContent: "center",
-                                borderRadius: 12,
-                                alignSelf: "center",
-                                marginTop: 20,
-                            },
+                            styles.button,
                         ]}
                         onPress={() => {
-                            shoppingMall.quitMall();
-                            setInMall(false);
-                            setInDepartmentStore(false);
-                            setInBookStore(false);
+                            if (
+                                dateValidation(enrollDate) &&
+                                surnameValidation(surname) &&
+                                salaryValidation(salaryPerHour) &&
+                                workedHoursValidation(workedHours)
+                            ) {
+                                const date = enrollDate.split(".");
+
+                                const day = parseInt(date[0]);
+                                const month = parseInt(date[1]) - 1;
+                                const year = parseInt(date[2]);
+                                const newWorker: Worker = {
+                                    surname: surname,
+                                    enrollDate: new Date(year, month, day),
+                                    salaryPerHour: salaryPerHour,
+                                    workedHours: workedHours,
+                                };
+                                setWorkers([...workers, newWorker]);
+                            }
                         }}
                     >
-                        <Text style={styles.text}>Вийти з тц</Text>
+                        <Text style={styles.text}>Click</Text>
                     </Pressable>
-                ) : (
-                    <Pressable
-                        style={({ pressed }) => [
-                            {
-                                backgroundColor: pressed
-                                    ? "#66a3ff"
-                                    : "#0066ff",
-                            },
-                            {
-                                width: 200,
-                                height: 40,
-                                alignItems: "center",
-                                justifyContent: "center",
-                                borderRadius: 12,
-                                alignSelf: "center",
-                                marginTop: 20,
-                            },
-                        ]}
-                        onPress={() => {
-                            shoppingMall.enterMall();
-                            setInMall(true);
-                        }}
-                    >
-                        <Text style={styles.text}>Увійти в тц</Text>
-                    </Pressable>
-                )}
-                {inMall ? (
-                    <View>
-                        {inBookStore ? (
-                            <Pressable
-                                style={({ pressed }) => [
-                                    {
-                                        backgroundColor: pressed
-                                            ? "#66a3ff"
-                                            : "#0066ff",
-                                    },
-                                    {
-                                        width: 200,
-                                        height: 40,
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderRadius: 12,
-                                        alignSelf: "center",
-                                        marginTop: 20,
-                                    },
-                                ]}
-                                onPress={() => {
-                                    bookstore.quitBookStore();
-                                    setInBookStore(false);
-                                }}
-                            >
+                    {workers.map((elem: Worker, index: number) => {
+                        return (
+                            <View key={index}>
                                 <Text style={styles.text}>
-                                    Вийти з книгарні
+                                    Прізвище: {elem.surname}
                                 </Text>
-                            </Pressable>
-                        ) : (
-                            <Pressable
-                                style={({ pressed }) => [
-                                    {
-                                        backgroundColor: pressed
-                                            ? "#66a3ff"
-                                            : "#0066ff",
-                                    },
-                                    {
-                                        width: 200,
-                                        height: 40,
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderRadius: 12,
-                                        alignSelf: "center",
-                                        marginTop: 20,
-                                    },
-                                ]}
-                                onPress={() => {
-                                    bookstore.sellProducts();
-                                    setInBookStore(true);
-                                    setInDepartmentStore(false);
-                                }}
-                            >
                                 <Text style={styles.text}>
-                                    Зайти в книгарню
+                                    Дата зарахування на роботу:{" "}
+                                    {elem.enrollDate.getDate() +
+                                        "." +
+                                        (elem.enrollDate.getMonth() + 1) +
+                                        "." +
+                                        elem.enrollDate.getFullYear()}
                                 </Text>
-                            </Pressable>
-                        )}
-                        {inBookStore
-                            ? bookstore
-                                  .getBooks()
-                                  .map((elem: any, index: number) => {
-                                      return (
-                                          <View
-                                              key={index}
-                                              style={{
-                                                  alignSelf: "center",
-                                                  paddingBottom: 20,
-                                              }}
-                                          >
-                                              <Text style={styles.textProducts}>
-                                                  Книга № {index + 1}
-                                              </Text>
-                                              <Text style={styles.textProducts}>
-                                                  {elem.name}
-                                              </Text>
-                                              <Text style={styles.textProducts}>
-                                                  {elem.genre}
-                                              </Text>
-                                              <Text style={styles.textProducts}>
-                                                  {elem.price}
-                                              </Text>
-                                          </View>
-                                      );
-                                  })
-                            : null}
-                        {inDepartmentStore ? (
-                            <Pressable
-                                style={({ pressed }) => [
-                                    {
-                                        backgroundColor: pressed
-                                            ? "#66a3ff"
-                                            : "#0066ff",
-                                    },
-                                    {
-                                        width: 200,
-                                        height: 40,
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderRadius: 12,
-                                        alignSelf: "center",
-                                        marginTop: 20,
-                                    },
-                                ]}
-                                onPress={() => {
-                                    departmentStore.quitDepartmentStore();
-                                    setInDepartmentStore(false);
-                                }}
-                            >
                                 <Text style={styles.text}>
-                                    Вийти з крамниці
+                                    Годинна заробітна плата:{" "}
+                                    {elem.salaryPerHour}
                                 </Text>
-                            </Pressable>
-                        ) : (
-                            <Pressable
-                                style={({ pressed }) => [
-                                    {
-                                        backgroundColor: pressed
-                                            ? "#66a3ff"
-                                            : "#0066ff",
-                                    },
-                                    {
-                                        width: 200,
-                                        height: 40,
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderRadius: 12,
-                                        alignSelf: "center",
-                                        marginTop: 20,
-                                    },
-                                ]}
-                                onPress={() => {
-                                    departmentStore.sellProducts();
-                                    setInDepartmentStore(true);
-                                    setInBookStore(false);
-                                }}
-                            >
                                 <Text style={styles.text}>
-                                    Зайти в крамницю
+                                    Кількість відпрацьованих годин:{" "}
+                                    {elem.workedHours}
                                 </Text>
-                            </Pressable>
-                        )}
-                        {inDepartmentStore ? (
-                            <View>
-                                <Text style={styles.textProducts}>Одяг</Text>
-                                {departmentStore
-                                    .getClothing()
-                                    .map((elem: any, index: number) => {
-                                        return (
-                                            <View
-                                                key={index}
-                                                style={{
-                                                    alignSelf: "center",
-                                                    paddingBottom: 20,
-                                                }}
-                                            >
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    Товар № {index + 1}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.name}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.price}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.size}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.color}
-                                                </Text>
-                                            </View>
-                                        );
-                                    })}
-                                <Text style={styles.textProducts}>
-                                    Побутова техніка
+                                <Text style={styles.text}>
+                                    Стаж{" "}
+                                    {calculateExp(elem.enrollDate) + " днів"}
                                 </Text>
-                                {departmentStore
-                                    .getTechnique()
-                                    .map((elem: any, index: number) => {
-                                        return (
-                                            <View
-                                                key={index}
-                                                style={{
-                                                    alignSelf: "center",
-                                                    paddingBottom: 20,
-                                                }}
-                                            >
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    Товар № {index + 1}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.name}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.price}
-                                                </Text>
-                                                <Text
-                                                    style={styles.textProducts}
-                                                >
-                                                    {elem.type}
-                                                </Text>
-                                            </View>
-                                        );
-                                    })}
                             </View>
-                        ) : null}
-                    </View>
-                ) : null}
-            </SafeAreaView>
-        </ScrollView>
+                        );
+                    })}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    input: {
+        backgroundColor: "white",
+        margin: 15,
+        fontSize: 20,
+        padding: 5,
+    },
     container: {
         backgroundColor: "#fff",
         alignItems: "center",
@@ -340,29 +193,20 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 20,
-        lineHeight: 21,
-        fontWeight: "bold",
-        letterSpacing: 0.25,
-        color: "white",
-        alignSelf: "center",
-    },
-    textProducts: {
-        fontSize: 20,
-        lineHeight: 21,
+        lineHeight: 20,
         fontWeight: "bold",
         letterSpacing: 0.25,
         color: "black",
         alignSelf: "center",
     },
     button: {
-        marginTop: 10,
         alignItems: "center",
         alignSelf: "center",
         paddingVertical: 12,
         paddingHorizontal: 32,
         borderRadius: 4,
         elevation: 3,
-        width: 200,
+        width: 130,
     },
     dropdown: {
         borderColor: "#82ccdd",
